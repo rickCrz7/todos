@@ -2,15 +2,14 @@ package main
 
 import (
 	"database/sql"
-	"errors"
 )
 
 type TodoDao interface {
 	GetAll() ([]*Todo, error)
-	Get(id int) (*Todo, error)
-	Create(todo *Todo) (*Todo, error)
-	Update(todo *Todo) (*Todo, error)
-	Delete(id int) error
+	Get(id string) (*Todo, error)
+	Create(todo *Todo) error
+	Update(todo *Todo) error
+	Delete(id string) error
 }
 
 type TodoDaoImpl struct {
@@ -22,84 +21,53 @@ func NewTodoDao(conn *sql.DB) TodoDao {
 }
 
 func (dao *TodoDaoImpl) GetAll() ([]*Todo, error) {
-	return nil, errors.New("Not implemented")
-	// rows, err := dao.conn.Query("SELECT * FROM todos")
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// defer rows.Close()
+	rows, err := dao.conn.Query("SELECT id, title, completed, created_at, updated_at FROM todos")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
 
-	// todos := make([]*Todo, 0)
-	// for rows.Next() {
-	// 	todo := new(Todo)
-	// 	err := rows.Scan(&todo.ID, &todo.Title, &todo.Completed, &todo.CreatedAt, &todo.UpdatedAt)
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-	// 	todos = append(todos, todo)
-	// }
-	// if err = rows.Err(); err != nil {
-	// 	return nil, err
-	// }
-	// return todos, nil
+	todos := []*Todo{}
+	for rows.Next() {
+		todo := &Todo{}
+		err := rows.Scan(&todo.ID, &todo.Title, &todo.Completed, &todo.CreatedAt, &todo.UpdatedAt)
+		if err != nil {
+			return nil, err
+		}
+		todos = append(todos, todo)
+	}
+	return todos, nil
 }
 
-func (dao *TodoDaoImpl) Get(id int) (*Todo, error) {
-	return nil, errors.New("Not implemented")
-	// row := dao.conn.QueryRow("SELECT * FROM todos WHERE id = ?", id)
-	// todo := new(Todo)
-	// err := row.Scan(&todo.ID, &todo.Title, &todo.Completed, &todo.CreatedAt, &todo.UpdatedAt)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// return todo, nil
+func (dao *TodoDaoImpl) Get(id string) (*Todo, error) {
+	todo := &Todo{}
+	err := dao.conn.QueryRow("SELECT id, title, completed, created_at, updated_at FROM todos WHERE id = $1", id).Scan(&todo.ID, &todo.Title, &todo.Completed, &todo.CreatedAt, &todo.UpdatedAt)
+	if err != nil {
+		return nil, err
+	}
+	return todo, nil
 }
 
-func (dao *TodoDaoImpl) Create(todo *Todo) (*Todo, error) {
-	return nil, errors.New("Not implemented")
-	// stmt, err := dao.conn.Prepare("INSERT INTO todos (title, completed, created_at, updated_at) VALUES (?, ?, ?, ?)")
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// defer stmt.Close()
-
-	// res, err := stmt.Exec(todo.Title, todo.Completed, todo.CreatedAt, todo.UpdatedAt)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// todo.ID, err = res.LastInsertId()
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// return todo, nil
+func (dao *TodoDaoImpl) Create(todo *Todo) error {
+	_, err := dao.conn.Exec("INSERT INTO todos (id, title, completed, created_at, updated_at) VALUES ($1, $2, $3, $4, $5)", todo.ID, todo.Title, todo.Completed, todo.CreatedAt, todo.UpdatedAt)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
-func (dao *TodoDaoImpl) Update(todo *Todo) (*Todo, error) {
-	return nil, errors.New("Not implemented")
-	// stmt, err := dao.conn.Prepare("UPDATE todos SET title = ?, completed = ?, updated_at = ? WHERE id = ?")
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// defer stmt.Close()
-
-	// _, err = stmt.Exec(todo.Title, todo.Completed, todo.UpdatedAt, todo.ID)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// return todo, nil
+func (dao *TodoDaoImpl) Update(todo *Todo) error {
+	_, err := dao.conn.Exec("UPDATE todos SET title = $1, completed = $2, updated_at = now() WHERE id = $3", todo.Title, todo.Completed, todo.ID)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
-func (dao *TodoDaoImpl) Delete(id int) error {
-	return errors.New("Not implemented")
-	// stmt, err := dao.conn.Prepare("DELETE FROM todos WHERE id = ?")
-	// if err != nil {
-	// 	return err
-	// }
-	// defer stmt.Close()
-
-	// _, err = stmt.Exec(id)
-	// if err != nil {
-	// 	return err
-	// }
-	// return nil
+func (dao *TodoDaoImpl) Delete(id string) error {
+	_, err := dao.conn.Exec("DELETE FROM todos WHERE id = $1", id)
+	if err != nil {
+		return err
+	}
+	return nil
 }
