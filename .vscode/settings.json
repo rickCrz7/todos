@@ -9,6 +9,16 @@
             "name": "localhost",
             "username": "deb-08",
             "password": "T0d05!"
+        },
+        {
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 5432,
+            "driver": "PostgreSQL",
+            "name": "todos",
+            "database": "todos",
+            "username": "todos",
+            "password": "T0d05!"
         }
     ]
 }
