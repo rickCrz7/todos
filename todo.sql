@@ -1,4 +1,5 @@
 drop table if exists todos;
+drop table if exists owners;
 
 create table owners (
     id varchar(50) primary key,
@@ -12,7 +13,7 @@ create table todos (
     completed boolean default false,
     created_at timestamp not null,
     updated_at timestamp not null default now(),
-    owner_id varchar(50) not null references owners(id)
+    owner_id varchar(50) not null references owners(id) on delete cascade
 );
 
 INSERT INTO owners (id, name, created_at) VALUES ('1', 'Alice', now());
@@ -29,4 +30,3 @@ INSERT INTO todos (id, title, created_at, owner_id) VALUES ('5', 'Finish homewor
 INSERT INTO todos (id, title, created_at, owner_id) VALUES ('6', 'Do chores', now(), '3');
 INSERT INTO todos (id, title, created_at, owner_id) VALUES ('7', 'Read Documentation', now(), '4');
 INSERT INTO todos (id, title, created_at, owner_id) VALUES ('8', 'Change oil', now(), '5');
-```
